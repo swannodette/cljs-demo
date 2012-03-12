@@ -19,9 +19,9 @@
           class (.-className this)
           class-str (if (not (s/blank? class)) (str " class=\"" class "\"") "")]
       (list "<"
-            (str (.toLowerCase (.-tagName this))
-                 id-str
-                 class-str)
+            str (.toLowerCase (.-tagName this))
+            id-str
+            class-str
             ">"))))
 
 (extend-type js/NodeList
@@ -60,4 +60,24 @@
      (time
       (dotimes [_ 1e4] 
         (js-keys ss)))))
+
+  ;; not that fast
+  ;; 90ms
+  (dotimes [_ 10]
+    (time
+     (dotimes [_ 1e6] 
+       (.getElementById js/document "box"))))
+
+  ;; 140ms
+  (dotimes [_ 10]
+    (time
+     (dotimes [_ 1e6] 
+       (.getElementsByTagName js/document "div"))))
+
+  ;; 28ms
+  ;; 3X slower
+  (dotimes [_ 10]
+    (time
+     (dotimes [_ 1e6] 
+       (+ 1 2))))
   )

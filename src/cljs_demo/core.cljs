@@ -6,6 +6,11 @@
 
 (repl/connect "http://localhost:9000/repl")
 
+(extend-type js/Text
+  IPrintable
+  (-pr-seq [this options]
+    (list "<text>")))
+
 (extend-type js/Element
   IPrintable
   (-pr-seq [this options]
@@ -13,12 +18,11 @@
           id-str (if (not (s/blank? id)) (str " id=\"" id "\"") "")
           class (.-className this)
           class-str (if (not (s/blank? class)) (str " class=\"" class "\"") "")]
-      (if id
-        (list "<"
-              (.toLowerCase (.-tagName this))
-              id-str
-              class-str
-              ">")))))
+      (list "<"
+            (str (.toLowerCase (.-tagName this))
+                 id-str
+                 class-str)
+            ">"))))
 
 (extend-type js/NodeList
   ISeqable

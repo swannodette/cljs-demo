@@ -1,7 +1,8 @@
 (defproject cljs-demo "0.1.0-SNAPSHOT"
   :description "ClojureScripting!"
-  :dependencies [[org.clojure/clojure "1.4.0-beta3"]]
+  :dependencies [[org.clojure/clojure "1.4.0-beta3"]
+                 [domina "1.0.0-alpha2"]]
+  :dev-dependencies [[lein-cljsbuild "0.1.2"]]
   :cljsbuild {:builds [{:source-path "src"
-                        :compiler {:output-to "main.js"
-                                   :optimizations :whitespace
+                        :compiler {:optimizations :simple
                                    :pretty-print true}}]})

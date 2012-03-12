@@ -6,10 +6,12 @@
 
 (repl/connect "http://localhost:9000/repl")
 
-(extend-type js/Text
-  IPrintable
-  (-pr-seq [this options]
-    (list "<text>")))
+(comment
+  (extend-type js/Text
+    IPrintable
+    (-pr-seq [this options]
+      (list "<text>")))
+  )
 
 (extend-type js/Element
   IPrintable

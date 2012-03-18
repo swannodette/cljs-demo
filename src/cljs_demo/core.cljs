@@ -125,10 +125,10 @@
   (-pr-seq [this options]
     (let [id (.-id this)
           id-str (if (not (s/blank? id)) 
-                   (str " id=\"" id "\"") "")
+                   (str " id='" id "'") "")
           class (.-className this)
           class-str (if (not (s/blank? class)) 
-                      (str " class=\"" class "\"") "")]
+                      (str " class='" class "'") "")]
       (list "<"
             (str (.toLowerCase (.-tagName this))
                  id-str class-str)

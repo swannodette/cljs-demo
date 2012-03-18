@@ -4,9 +4,9 @@
                  [domina "1.0.0-alpha2"]
                  [org.clojure/core.match "0.2.0-alpha9"]]
   :dev-dependencies [[lein-cljsbuild "0.1.2"]]
-  :cljsbuild {:builds [#_{:source-path "src"
+  :cljsbuild {:builds [{:source-path "src"
                         :compiler {:optimizations :simple
                                    :pretty-print true}}
-                       {:source-path "src"
+                       #_{:source-path "src"
                         :compiler {:optimizations :advanced
                                    :output-to "mainadv.js"}}]})

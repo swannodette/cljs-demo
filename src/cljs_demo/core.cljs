@@ -6,24 +6,110 @@
 
 (repl/connect "http://localhost:9000/repl")
 
+;; Functions
+
+(defn foo
+  ([] :zero)
+  ([a] :one)
+  ([a b] :two)
+  ([a b & rest] :variadic))
+
+;; Better Collections
+
 (comment
-  (extend-type js/Text
-    IPrintable
-    (-pr-seq [this options]
-      (list "<text>")))
+  (def david {:first "David" :last "Nolen"})
+  (def bob {:first "Bob" :last "Smith"})
+  (def cathy {:first "Cathy" :last "White"})
+
+  (def aset #{:cat :bird :dog :zebra})
   )
+
+;; First Class Everything
+
+(comment
+  (def address {:street "101 Foo Ave."
+                :city "New York"
+                :state "NY"
+                :zip 11211})
+
+  ;; this is just sugar
+  (let [{:keys [street zip]} address]
+    [street zip])
+  )
+
+;; Making a type
+
+(deftype Foo [a b])
+
+(deftype MyThing [a b]
+  ISeqable
+  (-seq [_]
+    (list a b))
+  IIndexed
+  (-nth [coll n]
+    (-nth coll n ::error))
+  (-nth [coll n not-found]
+    (condp = n
+      0 a
+      1 b
+      :else (if (= not-found ::error) 
+              (throw (js/Error. "Index out of boudns"))
+              not-found))))
+
+(comment
+  (let [[f & r] (MyThing. :a :b)]
+    f)
+  )
+
+;; Self Documenting Closures!
+
+(defn make-mything [a b]
+  (reify IIndexed
+    ISeqable
+    (-seq [_]
+      (list a b))
+    (-nth [coll n]
+      (-nth coll n ::error))
+    (-nth [coll n not-found]
+      (condp = n
+        0 a
+        1 b
+        :else (if (= not-found ::error) 
+                (throw (js/Error. "Index out of boudns"))
+                not-found)))))
+
+(comment
+  (let [[f & r] (make-mything :a :b)]
+    f)
+  )
+
+;; Less WAT
+
+(defn sensible-loops []
+  (loop [i 0]
+    (when (< i 10)
+      (js/setTimeout (fn [] (println i)))
+      (recur (inc i)))))
+
+;; Extending Abstractions
+
+(extend-type js/Text
+  IPrintable
+  (-pr-seq [this options]
+    (list "<text>")))
 
 (extend-type js/Element
   IPrintable
   (-pr-seq [this options]
     (let [id (.-id this)
-          id-str (if (not (s/blank? id)) (str " id=\"" id "\"") "")
+          id-str (if (not (s/blank? id)) 
+                   (str " id=\"" id "\"") "")
           class (.-className this)
-          class-str (if (not (s/blank? class)) (str " class=\"" class "\"") "")]
+          class-str (if (not (s/blank? class)) 
+                      (str " class=\"" class "\"") "")]
       (list "<"
-            str (.toLowerCase (.-tagName this))
-            id-str
-            class-str
+            (str (.toLowerCase (.-tagName this))
+                 id-str class-str)
             ">"))))
 
 (extend-type js/NodeList
@@ -32,7 +118,12 @@
     (IndexedSeq. this 0))
   IPrintable
   (-pr-seq [this options]
-    (-pr-seq (-seq this) options)))
+    (-pr-seq
+     (filter (fn [x]
+               (if (not (undefined? x))
+                   x))
+             (-seq this))
+     options)))
 
 (extend-type js/CSSStyleDeclaration
   ISeqable
@@ -46,40 +137,7 @@
   (-pr-seq [this options]
     (-pr-seq (-seq this) options)))
 
-(def box (d/single-node (dc/sel "#box")))
-
 (comment
-  ;; 100-200ms
-  (let [ss (.-style box)]
-   (dotimes [_ 10]
-     (time
-      (dotimes [_ 1e3] 
-        (-seq ss)))))
-
-  ;; 200-300ms
-  (let [ss (.-style box)]
-   (dotimes [_ 10]
-     (time
-      (dotimes [_ 1e4] 
-        (js-keys ss)))))
-
-  ;; not that fast
-  ;; 90ms
-  (dotimes [_ 10]
-    (time
-     (dotimes [_ 1e6] 
-       (.getElementById js/document "box"))))
-
-  ;; 140ms
-  (dotimes [_ 10]
-    (time
-     (dotimes [_ 1e6] 
-       (.getElementsByTagName js/document "div"))))
-
-  ;; 28ms
-  ;; 3X slower
-  (dotimes [_ 10]
-    (time
-     (dotimes [_ 1e6] 
-       (+ 1 2))))
+  (def body (d/single-node (dc/sel "body")))
+  (def box (d/single-node (dc/sel "#box")))
   )

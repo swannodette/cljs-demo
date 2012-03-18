@@ -5,4 +5,7 @@
   :dev-dependencies [[lein-cljsbuild "0.1.2"]]
   :cljsbuild {:builds [{:source-path "src"
                         :compiler {:optimizations :simple
-                                   :pretty-print true}}]})
+                                   :pretty-print true}}
+                       {:source-path "src"
+                        :compiler {:optimizations :advanced
+                                   :output-to "mainadv.js"}}]})

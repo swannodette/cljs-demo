@@ -1,4 +1,5 @@
 (ns cljs-demo.core
+  (:use-macros [clojure.core.match.js :only [match]])
   (:require [clojure.string :as s]
             [clojure.browser.repl :as repl]
             [domina :as d]
@@ -14,6 +15,14 @@
   ([a b] :two)
   ([a b & rest] :variadic))
 
+;; Less WAT
+
+(defn sensible-loops []
+  (loop [i 0]
+    (when (< i 10)
+      (js/setTimeout (fn [] (println i)))
+      (recur (inc i)))))
+
 ;; Better Collections
 
 (comment
@@ -21,7 +30,16 @@
   (def bob {:first "Bob" :last "Smith"})
   (def cathy {:first "Cathy" :last "White"})
 
+  (map :first [david bob cathy])
+
   (def aset #{:cat :bird :dog :zebra})
+  )
+
+;; Lazy Sequences
+
+(comment
+  ;; Look Ma, no TCO!
+  (take 1000 (interleave (repeat "foo") (repeat "bar")))
   )
 
 ;; First Class Everything
@@ -83,13 +101,17 @@
     f)
   )
 
-;; Less WAT
+;; Macros FTW, Scala/Haskell style pattern matching
 
-(defn sensible-loops []
-  (loop [i 0]
-    (when (< i 10)
-      (js/setTimeout (fn [] (println i)))
-      (recur (inc i)))))
+(comment
+  (doseq [n (range 1 101)]
+    (println 
+      (match [(mod n 3) (mod n 5)]
+        [0 0] "FizzBuzz"
+        [0 _] "Fizz"
+        [_ 0] "Buzz"
+        :else n)))
+  )
 
 ;; Extending Abstractions
 

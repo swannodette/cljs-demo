@@ -126,66 +126,49 @@
 
 (deftype Foo [a b])
 
-(deftype MyThing [a b]
-  ISeqable
-  (-seq [_]
-    (list a b))
-  IIndexed
-  (-nth [coll n]
-    (-nth coll n ::error))
-  (-nth [coll n not-found]
-    (condp = n
-      0 a
-      1 b
-      :else (if (= not-found ::error) 
-              (throw (js/Error. "Index out of boudns"))
-              not-found))))
-
 (comment
   ;; new Foo(1, 2)
   (Foo. 1 2)
   (.-a (Foo. 1 2))
   (.-b (Foo. 1 2))
+  )
 
-  (nth (MyThing. 1 2) 0)
-  (nth (MyThing. 1 2) 1)
+;; We always extend *existing* abstractions
+;; what do we mean by "abstraction"?
 
+(comment
+  (seq (array 1 2 3 4 5))
+
+  (first (array 1 2 3 4 5))
+  (rest (array 1 2 3 4 5))
+
+  (first "David Nolen")
+  (rest "David Nolen")
+
+  (first {:first "David" :last "Nolen"})
+  (rest {:first "David" :last "Nolen"})
+
+  ;; everything works as long as the type
+  ;; implements -seq
+  (-seq "David Nolen")
+
+  ;; this is the same as if the JS object had
+  ;; a method _seq - duck typing FTW!
+  )
+
+(deftype MyThing [a b]
+  ISeqable
+  (-seq [_]
+    (list a b)))
+
+(comment
   ;; destructuring just works
   (let [[f & r] (MyThing. :a :b)]
     f)
   )
 
-;; Self Documenting Closures!
-
-;; function(a, b) {
-;;   return {
-;;     a: function ...
-;;     b: function ...
-;;   };
-;; }
-
-(defn make-mything [a b]
-  (reify IIndexed
-    ISeqable
-    (-seq [_]
-      (list a b))
-    (-nth [coll n]
-      (-nth coll n ::error))
-    (-nth [coll n not-found]
-      (condp = n
-        0 a
-        1 b
-        :else (if (= not-found ::error) 
-                (throw (js/Error. "Index out of bounds"))
-                not-found)))))
-
-(comment
-  ;; destructuring is just sugar over function calls!
-  (let [[f & r] (make-mything :a :b)]
-    f)
-  )
-
 ;; MACROS YEAH!
+;; we can extend the language without modifying the compiler
 
 (comment
   ;; fizzbuzz
@@ -197,26 +180,7 @@
         [_ 0] "Buzz"
         :else n)))
 
-  ;; pattern matching red black trees
-  (let [n [:black [:red [:red 1 2 3] 3 4] 5 6]]
-     (match [n]
-       [(:or [:black [:red [:red a x b] y c] z d]
-             [:black [:red a x [:red b y c]] z d]
-             [:black a x [:red [:red b y c] z d]]
-             [:black a x [:red b y [:red c z d]]])] :balance
-       :else :valid))
-
-  ;; ~1s, we're not even using an optimal datastructure!
-  (let [n [:black [:red [:red 1 2 3] 3 4] 5 6]]
-    (dotimes [_ 1]
-      (time
-        (dotimes [_ 50000]
-          (match [n]
-             [(:or [:black [:red [:red a x b] y c] z d]
-                   [:black [:red a x [:red b y c]] z d]
-                   [:black a x [:red [:red b y c] z d]]
-                   [:black a x [:red b y [:red c z d]]])] :balance
-             :else :valid)))))
+  ;; this compiles down to very, very efficient tests
   )
 
 ;; Polymorphic Functions!
@@ -298,10 +262,15 @@
   (def box (d/single-node (dc/sel "#box")))
   (.-style box)
 
+  ;; interactive live w/ the browser
   (set! (.-height (.-style box)) "300px")
   (set! (.-height (.-style box)) "100px")
   (set! (.-backgroundColor (.-style box)) "blue")
 
+  ;; interop, can always call methods with .foo
+  (.getElementById js/document "box")
+
+  ;; property access .-foo
   (.-style box)
   )
 

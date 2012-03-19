@@ -1,9 +1,13 @@
+;; proper namespaces
 (ns cljs-demo.core
   (:use-macros [clojure.core.match.js :only [match]])
   (:require [clojure.string :as s]
+            [cljs.reader :as r]
             [clojure.browser.repl :as repl]
             [domina :as d]
             [domina.css :as dc]))
+
+;; browser connected REPL
 
 (repl/connect "http://localhost:9000/repl")
 
@@ -15,15 +19,7 @@
   ([a b] :two)
   ([a b & rest] :variadic))
 
-;; Less WAT
-
-(defn sensible-loops []
-  (loop [i 0]
-    (when (< i 10)
-      (js/setTimeout (fn [] (println i)))
-      (recur (inc i)))))
-
-;; Better Collections
+;; Data - Better Collections
 
 (comment
   (def david {:first "David" :last "Nolen"})
@@ -33,6 +29,19 @@
   (map :first [david bob cathy])
 
   (def aset #{:cat :bird :dog :zebra})
+
+  (conj aset :bird)
+
+  ;; many data structures work as functions
+  (def address {:street "101 Foo Ave."
+                :city "New York"
+                :state "NY"
+                :zip 11211})
+
+  ;; we can use hash maps as functions
+  ;; there's no magic here, you can implement
+  ;; such a type as well
+  (map address [:street :zip])
   )
 
 ;; Lazy Sequences
@@ -55,6 +64,14 @@
     [street zip])
   )
 
+;; Less WAT
+
+(defn sensible-loops []
+  (loop [i 0]
+    (when (< i 10)
+      (js/setTimeout (fn [] (println i)))
+      (recur (inc i)))))
+
 ;; Making a type
 
 (deftype Foo [a b])
@@ -75,6 +92,7 @@
               not-found))))
 
 (comment
+  ;; destructuring just works
   (let [[f & r] (MyThing. :a :b)]
     f)
   )
@@ -93,17 +111,17 @@
         0 a
         1 b
         :else (if (= not-found ::error) 
-                (throw (js/Error. "Index out of boudns"))
+                (throw (js/Error. "Index out of bounds"))
                 not-found)))))
 
 (comment
+  ;; destructuring is just sugar over function calls!
   (let [[f & r] (make-mything :a :b)]
     f)
   )
 
-;; Macros FTW, Scala/Haskell style pattern matching
-
 (comment
+  ;; fizzbuzz
   (doseq [n (range 1 101)]
     (println 
       (match [(mod n 3) (mod n 5)]
@@ -111,9 +129,59 @@
         [0 _] "Fizz"
         [_ 0] "Buzz"
         :else n)))
+
+  ;; pattern matching red black trees
+  (let [n [:black [:red [:red 1 2 3] 3 4] 5 6]]
+     (match [n]
+       [(:or [:black [:red [:red a x b] y c] z d]
+             [:black [:red a x [:red b y c]] z d]
+             [:black a x [:red [:red b y c] z d]]
+             [:black a x [:red b y [:red c z d]]])] :balance
+       :else :valid))
+
+  ;; ~1s, we're not even using an optimal datastructure!
+  (let [n [:black [:red [:red 1 2 3] 3 4] 5 6]]
+    (dotimes [_ 1]
+      (time
+        (dotimes [_ 50000]
+          (match [n]
+             [(:or [:black [:red [:red a x b] y c] z d]
+                   [:black [:red a x [:red b y c]] z d]
+                   [:black a x [:red [:red b y c] z d]]
+                   [:black a x [:red b y [:red c z d]]])] :balance
+             :else :valid)))))
   )
 
-;; Extending Abstractions
+;; Polymorphic Functions!
+
+(defprotocol ISound
+  (-sound [this]))
+
+(deftype Cat []
+  ISound
+  (-sound [_] "meow!"))
+
+(deftype Dog []
+  ISound
+  (-sound [_] "woof!"))
+
+(extend-type default
+  ISound
+  (-sound [_] "... silence ..."))
+
+(comment
+  (-sound (Cat.))
+  (-sound (Dog.))
+  (-sound 1)
+
+  (let [c (Cat.)]
+    (dotimes [_ 5]
+      (time
+        (dotimes [_ 10000000]
+          (-sound c)))))
+  )
+
+;; Extending Abstractions safely to native types
 
 (extend-type js/Text
   IPrintable
@@ -162,4 +230,11 @@
 (comment
   (def body (d/single-node (dc/sel "body")))
   (def box (d/single-node (dc/sel "#box")))
+  )
+
+;; JSON.next
+(comment
+  (r/read-string "(+ 1 2)")
+  (r/read-string "#{1 [2 3] {:foo :bar}}")
+  (type (r/read-string "#{1 [2 3] {:foo :bar}}"))
   )

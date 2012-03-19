@@ -212,7 +212,7 @@
   (-sound (Dog.))
   (-sound 1)
 
-  ;; ~92ms
+  ;; ~90ms
   (let [c (Cat.)]
     (dotimes [_ 5]
       (time
@@ -222,11 +222,11 @@
   (defn bar [i]
     (inc i))
 
-  ;; ~84ms
+  ;; ~80ms
   (dotimes [_ 5]
     (time
       (dotimes [i 1000000]
-        (foo i))))  
+        (foo i))))
   )
 
 ;; Extending Abstractions safely to native types

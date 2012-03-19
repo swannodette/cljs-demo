@@ -24,6 +24,9 @@
   (foo 1)
   (foo 1 2)
   (foo 1 2 3)
+
+  ;; would be much more tedious in JS
+  ;; arguments boilerplate
   )
 
 ;; Data - Better Collections
@@ -39,7 +42,7 @@
 
   (map :first [david bob cathy])
 
-  (get {[1 2] :next} [1 2])
+  (get {[1 2] :next-level} [1 2])
 
   (def aset #{:cat :bird :dog :zebra})
 
@@ -55,6 +58,10 @@
   ;; there's no magic here, you can implement
   ;; such a type as well
   (map address [:street :zip])
+
+  ;; normally in JS we need something like Underscore.js
+  ;; even then, still verbose, wrapping in functions
+  ;; so much for beautiful OOP
   )
 
 ;; Lazy Sequences
@@ -75,7 +82,7 @@
   (def ints (map inc (range)))
 
   ;; Look Ma, no TCO!
-  (take 10 (interleave (repeat "foo") (repeat "bar")))
+  (take 1000 (interleave (repeat "foo") (repeat "bar")))
 
   (take 10 (map #(* % 2) (map inc (range))))
 
@@ -205,11 +212,21 @@
   (-sound (Dog.))
   (-sound 1)
 
+  ;; ~92ms
   (let [c (Cat.)]
     (dotimes [_ 5]
       (time
         (dotimes [_ 1000000]
           (-sound c)))))
+
+  (defn bar [i]
+    (inc i))
+
+  ;; ~84ms
+  (dotimes [_ 5]
+    (time
+      (dotimes [i 1000000]
+        (foo i))))  
   )
 
 ;; Extending Abstractions safely to native types

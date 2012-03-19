@@ -62,6 +62,12 @@
   ;; normally in JS we need something like Underscore.js
   ;; even then, still verbose, wrapping in functions
   ;; so much for beautiful OOP
+
+  ;; Deep equality is the default!
+
+  (= david {:last "Nolen" :first "David"})
+  (= '(1 2 3) [1 2 3])
+  (= #{1 3 2} #{2 3 1})
   )
 
 ;; Lazy Sequences

@@ -32,18 +32,24 @@
 ;; Data - Better Collections
 
 (comment
+  ;; real hashmaps
   (def david {:first "David" :last "Nolen"})
   (def bob {:first "Bob" :last "Smith"})
   (def cathy {:first "Cathy" :last "White"})
 
+  ;; accessing properties
   (get david :first)
   (get david :last)
+
+  ;; keywords are functions
   (:first david)
 
   (map :first [david bob cathy])
 
+  ;; arbitrary keys
   (get {[1 2] :next-level} [1 2])
 
+  ;; real sets
   (def aset #{:cat :bird :dog :zebra})
 
   (conj aset :bird)
@@ -64,7 +70,6 @@
   ;; so much for beautiful OOP
 
   ;; Deep equality is the default!
-
   (= david {:last "Nolen" :first "David"})
   (= '(1 2 3) [1 2 3])
   (= #{1 3 2} #{2 3 1})
@@ -118,9 +123,11 @@
 ;; Less WAT
 
 (comment
+  ;; 0 and "" are not truthy
   (if 0 true false)
   (if "" true false)
 
+  ;; only nil and false are falsey
   (if nil true false)
   (if false true false)
   )
@@ -132,6 +139,8 @@
       (recur (inc i)))))
 
 (comment
+  ;; ClojureScript generate optimal loops that properly
+  ;; close over loop locals
   (sensible-loops)
   )
 
@@ -150,14 +159,24 @@
 ;; what do we mean by "abstraction"?
 
 (comment
+  ;; we can convert array into ClojureScript sequences
   (seq (array 1 2 3 4 5))
 
+  ;; first does this and gives the first element
   (first (array 1 2 3 4 5))
+  ;; rest does this and gives us the rest of the sequence
   (rest (array 1 2 3 4 5))
 
+  ;; arrays can be converted into Seqs!
+  (satisfies? ISeqable (array))
+  ;; but not numbers
+  (satisfies? ISeqable 1)
+
+  ;; strings work!
   (first "David Nolen")
   (rest "David Nolen")
 
+  ;; maps too
   (first {:first "David" :last "Nolen"})
   (rest {:first "David" :last "Nolen"})
 
@@ -178,22 +197,6 @@
   ;; destructuring just works
   (let [[f & r] (MyThing. :a :b)]
     f)
-  )
-
-;; MACROS YEAH!
-;; we can extend the language without modifying the compiler
-
-(comment
-  ;; fizzbuzz
-  (doseq [n (range 1 101)]
-    (println 
-      (match [(mod n 3) (mod n 5)]
-        [0 0] "FizzBuzz"
-        [0 _] "Fizz"
-        [_ 0] "Buzz"
-        :else n)))
-
-  ;; this compiles down to very, very efficient tests
   )
 
 ;; Polymorphic Functions!
@@ -233,6 +236,22 @@
     (time
       (dotimes [i 1000000]
         (foo i))))
+  )
+
+;; MACROS YEAH!
+;; we can extend the language without modifying the compiler
+
+(comment
+  ;; fizzbuzz
+  (doseq [n (range 1 101)]
+    (println 
+      (match [(mod n 3) (mod n 5)]
+        [0 0] "FizzBuzz"
+        [0 _] "Fizz"
+        [_ 0] "Buzz"
+        :else n)))
+
+  ;; this compiles down to very, very efficient tests
   )
 
 ;; Extending Abstractions safely to native types

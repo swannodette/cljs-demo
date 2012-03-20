@@ -36,6 +36,9 @@
   (foo 1 2)
   (foo 1 2 3)
   (foo 1 2 3 4)
+
+  ;; anonymous functions, nice and short
+  (fn [x] (+ x 1))
   )
 
 ;; Data - Better Collections
@@ -72,7 +75,7 @@
   (def address {:street "101 Foo Ave."
                 :city "New York"
                 :state "NY"
-                :zip 11211})
+                :zip 11111})
 
   ;; we can use hash maps as functions
   ;; there's no magic here, you can implement
@@ -84,14 +87,10 @@
   ;; so much for beautiful OOP
 
   ;; Deep equality is the default!
-  (= david {:last "Nolen" :first "David"})
+  (= david {:last "Nolen" :middle "E" :first "David"})
   (= '(1 2 3) [1 2 3])
   (= #{1 3 2} #{2 3 1})
   )
-
-;; Destructuring & First Class Everything
-(defn name->str [[last first]]
-  (str last ", " first))
 
 (comment
   ;; JavaScript Destructuring Assignment
@@ -107,12 +106,15 @@
 
   ;; this is just sugar
   ;; we'll see how this works below
-  (let [{:keys [street zip]} address]
-    [street zip])
+  (let [{city :city} address]
+    city)
 
   ;; nested destructuring
   (let [{[_ c] :city} address]
     c)
+
+  (let [{[_ c :as city] :city} address]
+    [c city])
 
   (name->str ["Nolen" "David"])
 
@@ -121,6 +123,10 @@
     (map (juxt :last :first))
     (map name->str))
   )
+
+;; Destructuring & First Class Everything
+(defn name->str [[last first]]
+  (str last ", " first))
 
 ;; Less WAT
 
@@ -198,6 +204,8 @@
 ;; what do we mean by "abstraction"?
 
 (comment
+  ;; Standard iteration protocol
+
   ;; we can convert array into ClojureScript sequences
   (seq (array 1 2 3 4 5))
 
@@ -206,14 +214,14 @@
   ;; rest does this and gives us the rest of the sequence
   (rest (array 1 2 3 4 5))
 
+    ;; strings work!
+  (first "David Nolen")
+  (rest "David Nolen")
+
   ;; arrays can be converted into Seqs!
   (satisfies? ISeqable (array))
   ;; but not numbers
   (satisfies? ISeqable 1)
-
-  ;; strings work!
-  (first "David Nolen")
-  (rest "David Nolen")
 
   ;; maps too
   (first {:first "David" :last "Nolen"})
@@ -234,7 +242,7 @@
 
 (comment
   ;; destructuring just works
-  (let [[f & r] (MyThing. :a :b)]
+  (let [[f _] (MyThing. :a :b)]
     f)
   )
 
@@ -268,15 +276,6 @@
       (time
         (dotimes [_ 1000000]
           (-sound c)))))
-
-  (defn bar [i]
-    (inc i))
-
-  ;; ~80ms
-  (dotimes [_ 5]
-    (time
-      (dotimes [i 1000000]
-        (foo i))))
   )
 
 ;; MACROS YEAH!
@@ -333,14 +332,12 @@
 (extend-type js/CSSStyleDeclaration
   ISeqable
   (-seq [this]
-    (let [ks (js-keys this)]
-      (into {}
-        (->> ks
-             (filter #(.hasOwnProperty this %))
-             (map #(vector % (aget this %)))))))
+    (->> (js-keys this)
+      (filter #(.hasOwnProperty this %))
+      (map #(vector % (aget this %)))))
   IPrintable
   (-pr-seq [this options]
-    (-pr-seq (-seq this) options)))
+    (-pr-seq (into {} (-seq this)) options)))
 
 (comment
   (def body (d/single-node (dc/sel "body")))
@@ -353,12 +350,14 @@
   (set! (.-height (.-style box)) "300px")
   (set! (.-height (.-style box)) "100px")
   (set! (.-backgroundColor (.-style box)) "blue")
+  (set! (.-backgroundColor (.-style box)) "red")
 
   ;; interop, can always call methods with .foo
   (.getElementById js/document "box")
 
-  ;; property access .-foo
-  (.-style box)
+  ;; iteration protocol just works!
+  (first (.-style box))
+  (rest (.-style box))
   )
 
 ;; JSON.next

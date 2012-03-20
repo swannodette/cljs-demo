@@ -8,8 +8,16 @@
             [domina.css :as dc]))
 
 ;; browser connected REPL
-
 (repl/connect "http://localhost:9000/repl")
+
+(comment
+  ;; symbols are automatically namespaced for you by the compiler
+  (def x 5)
+  (in-ns 'cljs.user)
+  (identity x)
+  (in-ns 'cljs-demo.core)
+  (identity x)
+  )
 
 ;; Functions
 
@@ -20,24 +28,27 @@
   ([a b & rest] :variadic))
 
 (comment
+  ;; would be much more tedious in JS
+  ;; arguments boilerplate
+
   (foo)
   (foo 1)
   (foo 1 2)
   (foo 1 2 3)
-
-  ;; would be much more tedious in JS
-  ;; arguments boilerplate
+  (foo 1 2 3 4)
   )
 
 ;; Data - Better Collections
 
 (comment
-  ;; real hashmaps
-  (def david {:first "David" :last "Nolen"})
-  (def bob {:first "Bob" :last "Smith"})
-  (def cathy {:first "Cathy" :last "White"})
+  ;; In JavaScript, Objects do double duty as types and maps
 
-  ;; accessing properties
+  ;; real hashmaps
+  (def david {:first "David" :middle "E" :last "Nolen"})
+  (def bob {:first "Bob" :middle "J" :last "Smith"})
+  (def cathy {:first "Cathy" :middle "S" :last "White"})
+
+  ;; accessing properties, notice this is first class access
   (get david :first)
   (get david :last)
 
@@ -45,6 +56,9 @@
   (:first david)
 
   (map :first [david bob cathy])
+
+  ;; there are large number of awesome functions
+  (map (juxt :last :first) [david bob cathy])
 
   ;; arbitrary keys
   (get {[1 2] :next-level} [1 2])
@@ -62,7 +76,7 @@
 
   ;; we can use hash maps as functions
   ;; there's no magic here, you can implement
-  ;; such a type as well
+  ;; your function-like type as well
   (map address [:street :zip])
 
   ;; normally in JS we need something like Underscore.js
@@ -75,40 +89,17 @@
   (= #{1 3 2} #{2 3 1})
   )
 
-;; Lazy Sequences
-
-(defn fib [a b] 
-  (lazy-seq (cons a (fib b (+ b a)))))
-
-(comment
-  ;; don't do this
-  (range)
-
-  (take 10 (range))
-
-  ;; 0-999
-  (take 1000 (range))
-
-  ;; positive integers! don't do this at the repl
-  (def ints (map inc (range)))
-
-  ;; Look Ma, no TCO!
-  (take 1000 (interleave (repeat "foo") (repeat "bar")))
-
-  (take 10 (map #(* % 2) (map inc (range))))
-
-  (take 36 (fib 0 1))
-
-  ;; 3ms
-  (time (last (take 1000 (fib 0 1))))
-
-  ;; we didn't blow the stack!  
-  (time (last (take 40000 (fib 0 1))))
-  )
-
 ;; Destructuring & First Class Everything
+(defn name->str [[last first]]
+  (str last ", " first))
 
 (comment
+  ;; JavaScript Destructuring Assignment
+  ;;
+  ;; var a = 1;  
+  ;; var b = 3;  
+  ;; [a, b] = [b, a];
+
   (def address {:street "101 Foo Ave."
                 :city "New York"
                 :state "NY"
@@ -118,6 +109,17 @@
   ;; we'll see how this works below
   (let [{:keys [street zip]} address]
     [street zip])
+
+  ;; nested destructuring
+  (let [{[_ c] :city} address]
+    c)
+
+  (name->str ["Nolen" "David"])
+
+  ;; advanced example
+  (->> [david bob cathy]
+    (map (juxt :last :first))
+    (map name->str))
   )
 
 ;; Less WAT
@@ -144,13 +146,50 @@
   (sensible-loops)
   )
 
+;; Lazy Sequences
+
+(defn fib [a b] 
+  (lazy-seq (cons a (fib b (+ b a)))))
+
+(comment
+  ;; don't do this
+  (range)
+
+  (take 10 (range))
+
+  ;; 0-999
+  (take 1000 (range))
+
+  ;; Look Ma, no TCO!
+  (take 1000 (interleave (repeat "foo") (repeat "bar")))
+
+  (take 10 (map #(* % 2) (map inc (range))))
+
+  (take 50 (fib 0 1))
+
+  ;; 3ms
+  (time (last (take 1000 (fib 0 1))))
+
+  ;; we didn't blow the stack!  
+  (time (last (take 300000 (fib 0 1))))
+  )
+
 ;; Making a type
 
 (deftype Foo [a b])
 
 (comment
+  ;; In JavaScript
+  ;;
+  ;; function Foo(a, b) {
+  ;;   this.a = a;
+  ;;   this.b = b;
+  ;; }
+
   ;; new Foo(1, 2)
   (Foo. 1 2)
+
+  ;; access fields of a type
   (.-a (Foo. 1 2))
   (.-b (Foo. 1 2))
   )
@@ -221,6 +260,8 @@
   (-sound (Dog.))
   (-sound 1)
 
+  ;; But, performance?
+
   ;; ~90ms
   (let [c (Cat.)]
     (dotimes [_ 5]
@@ -251,7 +292,11 @@
         [_ 0] "Buzz"
         :else n)))
 
-  ;; this compiles down to very, very efficient tests
+  ;; this compiles down to very, very, very efficient tests
+
+  ;; core.match is bigger than the ClojureScript compiler
+
+  ;; IcedClojureScript not necessary, just make a macro library!
   )
 
 ;; Extending Abstractions safely to native types
@@ -264,13 +309,13 @@
 (extend-type js/Element
   IPrintable
   (-pr-seq [this options]
-    (let [id (.-id this)
-          id-str (if (not (s/blank? id))
+    (let [id     (.-id this)
+          id-str (if-not (s/blank? id)
                    (str " id='" id "'") "")
-          class (.-className this)
-          class-str (if (not (s/blank? class)) 
-                      (str " class='" class "'") "")]
-      (list "#<" (.toLowerCase (.-tagName this)) id-str class-str ">"))))
+          class  (.-className this)
+          cl-str (if-not (s/blank? class) 
+                   (str " class='" class "'") "")]
+      (list "#<" (.toLowerCase (.-tagName this)) id-str cl-str ">"))))
 
 (extend-type js/NodeList
   ISeqable

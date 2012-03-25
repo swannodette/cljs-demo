@@ -1,6 +1,9 @@
 ;; proper namespaces
 (ns cljs-demo.core
   (:use-macros [clojure.core.match.js :only [match]])
+  (:require-macros [clj.core.logic.macros :as m]
+                   [clojure.tools.macro :as mu])
+  (:use [cljs.core.logic :only [firsto membero lvar *occurs-check*]])
   (:require [clojure.string :as s]
             [cljs.reader :as r]
             [clojure.browser.repl :as repl]
@@ -21,13 +24,17 @@
 
 ;; Functions
 
+(defn baz [] "Hello world!")
+
 (defn foo
   ([] :zero)
   ([a] :one)
   ([a b] :two)
-  ([a b & rest] :variadic))
+  ([a b & rest] rest))
 
 (comment
+  (baz)
+
   ;; would be much more tedious in JS
   ;; arguments boilerplate
 
@@ -36,6 +43,7 @@
   (foo 1 2)
   (foo 1 2 3)
   (foo 1 2 3 4)
+
 
   ;; anonymous functions, nice and short
   (fn [x] (+ x 1))
@@ -47,7 +55,7 @@
   ;; In JavaScript, Objects do double duty as types and maps
 
   ;; real hashmaps
-  (def david {:first "David" :middle "E" :last "Nolen"})
+  (def david {:first "David", :middle "E", :last "Nolen"})
   (def bob {:first "Bob" :middle "J" :last "Smith"})
   (def cathy {:first "Cathy" :middle "S" :last "White"})
 
@@ -58,13 +66,13 @@
   ;; keywords are functions
   (:first david)
 
-  (map :first [david bob cathy])
+  (map :last [david bob cathy])
 
-  ;; there are large number of awesome functions
+  ;; there are large number of neat functions
   (map (juxt :last :first) [david bob cathy])
 
   ;; arbitrary keys
-  (get {[1 2] :next-level} [1 2])
+  (get {[1 2] :js-next} [1 2])
 
   ;; real sets
   (def aset #{:cat :bird :dog :zebra})
@@ -80,7 +88,7 @@
   ;; we can use hash maps as functions
   ;; there's no magic here, you can implement
   ;; your function-like type as well
-  (map address [:street :zip])
+  (map address [:street :city])
 
   ;; normally in JS we need something like Underscore.js
   ;; even then, still verbose, wrapping in functions
@@ -106,8 +114,8 @@
 
   ;; this is just sugar
   ;; we'll see how this works below
-  (let [{city :city} address]
-    city)
+  (let [{foo :city} address]
+    (str foo " cool!"))
 
   ;; nested destructuring
   (let [{[_ c] :city} address]
@@ -124,7 +132,6 @@
     (map name->str))
   )
 
-;; Destructuring & First Class Everything
 (defn name->str [[last first]]
   (str last ", " first))
 
@@ -214,18 +221,18 @@
   ;; rest does this and gives us the rest of the sequence
   (rest (array 1 2 3 4 5))
 
-    ;; strings work!
+  ;; strings work!
   (first "David Nolen")
   (rest "David Nolen")
+
+  ;; maps too
+  (first {:first "David" :last "Nolen"})
+  (rest {:first "David" :last "Nolen"})
 
   ;; arrays can be converted into Seqs!
   (satisfies? ISeqable (array))
   ;; but not numbers
   (satisfies? ISeqable 1)
-
-  ;; maps too
-  (first {:first "David" :last "Nolen"})
-  (rest {:first "David" :last "Nolen"})
 
   ;; everything works as long as the type
   ;; implements -seq
@@ -238,11 +245,14 @@
 (deftype MyThing [a b]
   ISeqable
   (-seq [_]
-    (list a b)))
+    (list b a)))
 
 (comment
+  (.-a (MyThing. "foo" "bar"))
+  (.-b (MyThing. "foo" "bar"))
+
   ;; destructuring just works
-  (let [[f _] (MyThing. :a :b)]
+  (let [[_ f] (MyThing. "foo" "bar")]
     f)
   )
 
@@ -267,6 +277,9 @@
   (-sound (Cat.))
   (-sound (Dog.))
   (-sound 1)
+  (-sound {}) 
+  (-sound [])
+  (-sound (js/Date.))
 
   ;; But, performance?
 
@@ -296,6 +309,50 @@
   ;; core.match is bigger than the ClojureScript compiler
 
   ;; IcedClojureScript not necessary, just make a macro library!
+  )
+
+;; logic programming
+(m/defne righto [x y l]
+  ([_ _ [x y . r]])
+  ([_ _ [_ . r]] (righto x y r)))
+
+(defn nexto [x y l]
+  (m/conde
+    [(righto x y l)]
+    [(righto y x l)]))
+
+(defn zebrao [hs]
+  (mu/symbol-macrolet [_ (lvar)]
+   (m/all
+    (m/== [_ _ [_ _ 'milk _ _] _ _] hs)
+    (firsto hs ['norwegian _ _ _ _])
+    (nexto ['norwegian _ _ _ _] [_ _ _ _ 'blue] hs)
+    (righto [_ _ _ _ 'ivory] [_ _ _ _ 'green] hs)
+    (membero ['englishman _ _ _ 'red] hs)
+    (membero [_ 'kools _ _ 'yellow] hs)
+    (membero ['spaniard _ _ 'dog _] hs)
+    (membero [_ _ 'coffee _ 'green] hs)
+    (membero ['ukrainian _ 'tea _ _] hs)
+    (membero [_ 'lucky-strikes 'oj _ _] hs)
+    (membero ['japanese 'parliaments _ _ _] hs)
+    (membero [_ 'oldgolds _ 'snails _] hs)
+    (nexto [_ _ _ 'horse _] [_ 'kools _ _ _] hs)
+    (nexto [_ _ _ 'fox _] [_ 'chesterfields _ _ _] hs))))
+
+(comment
+  (m/run 1 [q] (zebrao q))
+
+  ;; 52ms
+  (binding [*occurs-check* false]
+    (time (m/run 1 [q] (zebrao q))))
+  )
+
+;; JSON.next
+(comment
+  (r/read-string "(+ 1 2)")
+  (r/read-string "#{1 [2 3] {:foo :bar}}")
+  (type (r/read-string "#{1 [2 3] {:foo :bar}}"))
+  (pr-str #{1 [2 3] {:foo :bar}})
   )
 
 ;; Extending Abstractions safely to native types
@@ -358,12 +415,4 @@
   ;; iteration protocol just works!
   (first (.-style box))
   (rest (.-style box))
-  )
-
-;; JSON.next
-(comment
-  (r/read-string "(+ 1 2)")
-  (r/read-string "#{1 [2 3] {:foo :bar}}")
-  (type (r/read-string "#{1 [2 3] {:foo :bar}}"))
-  (pr-str #{1 [2 3] {:foo :bar}})
   )

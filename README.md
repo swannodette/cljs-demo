@@ -14,8 +14,8 @@ SublimeREPL/config/Clojure/Main.sublime-menu. Add a new command that looks like 
  "args": {
     "type": "subprocess",
     "encoding": "utf8",
-    "cmd": {"windows": ["lein.bat", "repl"],
-            "linux": ["lein", "repl"],
+    "cmd": {"windows": ["lein", "trampoline", "cljsbuild", "repl-listen"],
+            "linux": ["lein", "trampoline", "cljsbuild", "repl-listen"],
             "osx":  ["lein", "trampoline", "cljsbuild", "repl-listen"]},
     "soft_quit": "\n(. System exit 0)\n",
     "cwd": {"windows":"c:/Clojure", // where the lein.bat lives!

@@ -36,7 +36,7 @@ From this repo's directory run:
 lein deps
 ```
 
-To get this projects's depedencies.
+To get this project's dependencies.
 
 In order to have the most pleasant workflow you should setup lein-cljsbuild to watch your ClojureScript files with
 
@@ -48,7 +48,7 @@ Now open the src/cljs_demo/core.cljs file from this repo. With the file focused 
 the menu Tools > SublimeREPL > Clojure > ClojureScript. You should see a new REPL. This REPL will hang until you open
 index.html (you can it find at the root level of the repo) in a browser. Once the browser has loaded try to run a simple
 expression like (+ 1 2) at the REPL. If you've successfully connected, you should see a proper return value for that 
-expression.
+expression. You may need to refresh the browser if you don't get a response right away.
 
 F2+b will trigger evaluating the s-expression before the cursor. Evaluate the namespace expression first, this will put
 the REPL in the right namespace. You can now evaluate the various forms in file at your leisure. Happy hacking!

@@ -1,7 +1,7 @@
 ;; proper namespaces
 (ns cljs-demo.core
   (:use-macros [clojure.core.match.js :only [match]])
-  (:require-macros [clj.core.logic.macros :as m]
+  (:require-macros [cljs.core.logic.macros :as m]
                    [clojure.tools.macro :as mu])
   (:use [cljs.core.logic :only [firsto membero lvar *occurs-check*]])
   (:require [clojure.string :as s]
@@ -54,6 +54,10 @@
 (comment
   ;; In JavaScript, Objects do double duty as types and maps
 
+  ;; everything is immutable!
+  (def l '(1 2 3 4 5))
+  (def v [1 2 3 4 5])
+
   ;; real hashmaps
   (def david {:first "David", :middle "E", :last "Nolen"})
   (def bob {:first "Bob" :middle "J" :last "Smith"})
@@ -88,7 +92,7 @@
   ;; we can use hash maps as functions
   ;; there's no magic here, you can implement
   ;; your function-like type as well
-  (map address [:street :city])
+  (map address [:city :street])
 
   ;; normally in JS we need something like Underscore.js
   ;; even then, still verbose, wrapping in functions
@@ -114,7 +118,7 @@
 
   ;; this is just sugar
   ;; we'll see how this works below
-  (let [{foo :city} address]
+  (let [{foo :state} address]
     (str foo " cool!"))
 
   ;; nested destructuring
@@ -245,14 +249,14 @@
 (deftype MyThing [a b]
   ISeqable
   (-seq [_]
-    (list b a)))
+    (list a b)))
 
 (comment
   (.-a (MyThing. "foo" "bar"))
   (.-b (MyThing. "foo" "bar"))
 
   ;; destructuring just works
-  (let [[_ f] (MyThing. "foo" "bar")]
+  (let [[f _] (MyThing. "foo" "bar")]
     f)
   )
 
@@ -277,7 +281,7 @@
   (-sound (Cat.))
   (-sound (Dog.))
   (-sound 1)
-  (-sound {}) 
+  (-sound {})
   (-sound [])
   (-sound (js/Date.))
 
@@ -311,7 +315,8 @@
   ;; IcedClojureScript not necessary, just make a macro library!
   )
 
-;; logic programming
+;; Logic programming
+
 (m/defne righto [x y l]
   ([_ _ [x y . r]])
   ([_ _ [_ . r]] (righto x y r)))

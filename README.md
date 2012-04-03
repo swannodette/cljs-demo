@@ -7,6 +7,8 @@ and finally, install Leiningen 1.7.
 From the Sublime Text 2 menu, Preferences > Browse Packages. You'll be taken to the Packages folder, open
 SublimeREPL/config/Clojure/Main.sublime-menu. Add a new command that looks like this:
 
+To get to a command line repl that runs code directly in the browser, rather than using Sublime Text 2, check the README.cli.md
+
 ```javascript
 {"command": "repl_open", 
  "caption": "ClojureScript",

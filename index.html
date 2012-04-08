@@ -11,11 +11,7 @@
             <div class="row">
                <div class="span12">
                     <h1>Try out Clojurescript</h1>
-                    <strong>Run these 6 forms first, it will get the page ready for you to interact with it</strong><br>
-                    <strong>the first "form" is the entire block of code</strong><br>
-                    <strong>starting with the ns and ending with the :as d</strong><br>
-                    <strong>Just copy and paste all of them to the repl and hit enter</strong><br>
-                    <strong>These first 6 forms will setup the browser with all of the libraries you need</strong><br>
+                    <strong>Run these forms first, it will get the page ready for you to interact with it</strong><br>
                     <strong>If it takes longer than ~ 15 seconds, refresh this page and it should load immediately</strong><br>
                     <style>
                             #box {
@@ -28,23 +24,8 @@
                     <div id="box" class="rect"></div>
 
                     <pre>
-(ns cljs-demo.core
-  (:use-macros [clojure.core.match.js :only [match]])
-  (:require-macros [cljs.core.logic.macros :as m]
-                   [clojure.tools.macro :as mu])
-  (:use [cljs.core.logic :only [firsto membero lvar *occurs-check*]])
-  (:require [clojure.string :as s]
-            [cljs.reader :as r]
-            [clojure.browser.repl :as repl]
-            [domina :as d]
-            [domina.css :as dc]))
-
-  (def body (d/single-node (dc/sel "body")))
-  (.-childNodes body)
-
-  (def box (d/single-node (dc/sel "#box")))
-  (.-style box)
-  (js/next)
+(ns cljs-demo.core)
+(setup-example)
 
 </pre>
 <pre style="display:none;">

@@ -1,15 +1,46 @@
-<html>
+<!dOCtYPE html>
+<html lang="en">
     <head>
+        <link rel="stylesheet" href="./bootstrap/css/bootstrap.min.css">
+        <!--[if lt IE 9]>
+                <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+         <![endif]-->
     </head>
     <body>
-        <script type="text/javascript" src="main.js"></script>
-        <style>
-            #box {
-              width: 100px;
-              height: 100px;
-              background-color: red;
-            }
-        </style>
-        <div id="box" class="rect"></div>
+        <div class="container">
+            <div class="row">
+               <div class="span12">
+                    <h1>Try out Clojurescript</h1>
+                    <strong>Run these forms first, it will get the page ready for you to interact with it</strong><br>
+                    <strong>If it takes longer than ~ 15 seconds, refresh this page and it should load immediately</strong><br>
+                    <style>
+                            #box {
+                              width: 100px;
+                              height: 100px;
+                              background-color: red;
+                              float:right;
+                            }
+                    </style>
+                    <div id="box" class="rect"></div>
+
+                    <pre>
+(ns cljs-demo.core)
+(setup-example)
+
+</pre>
+<pre style="display:none;">
+  ;; interact live w/ the browser
+  (set! (.-height (.-style box)) "300px")
+  (set! (.-height (.-style box)) "100px")
+  (set! (.-backgroundColor (.-style box)) "blue")
+  (set! (.-backgroundColor (.-style box)) "red")
+
+  ;; interop, can always call methods with .foo
+  (.getElementById js/document "box")
+</pre>
+                    <script type="text/javascript" src="main.js"></script>
+                </div>
+            </div>
+        </div>
     </body>
 </html>

@@ -37,10 +37,6 @@
 
   ;; interop, can always call methods with .foo
   (.getElementById js/document "box")
-
-  ;; iteration protocol just works!
-  (first (.-style box))
-  (rest (.-style box))
 </pre>
                     <script type="text/javascript" src="main.js"></script>
                     <script type="text/javascript" src="noncljs.js"></script>

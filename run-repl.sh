@@ -1,3 +1,4 @@
+#!/bin/sh
 lein clean
 lein deps 
 lein cljsbuild once 

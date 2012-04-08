@@ -1,9 +1,12 @@
-The only dependency of this project should be (Leiningen)[https://github.com/technomancy/leiningen]. Follow the instructions at that page to install it for your system. Leiningen is the build tool for clojure, similar to maven. 
+If you want to get up and running with a clojurescript REPL as fast as possible, this project is for you.
+
+The only dependency of this project should be [Leiningen](https://github.com/technomancy/leiningen). Follow the instructions at that page to install it for your system. Leiningen is the build tool for clojure, similar to maven. 
 
 Once you have leiningen installed, From this repo's directory run:
 
 ```shell
-sh run-repl.sh
+chmod +x run-repl.sh
+./run-repl.sh
 ```
 
 After you see the cljs repl, open index.html in the root of this repository in your favorite browser. You may need to refresh the browser if you don't get a response right away.

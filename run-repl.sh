@@ -10,4 +10,4 @@ echo "ClojureScript:cljs.user>"
 echo 
 echo
 echo "Once the page has finished loading, this repl can be used like the browser console"
-rlwrap lein trampoline cljsbuild repl-listen 
+lein trampoline cljsbuild repl-listen 
